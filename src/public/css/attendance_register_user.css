@@ -1,0 +1,66 @@
+body {
+    background-color: rgba(204, 204, 204, 0.389);
+    height: 100vh;
+}
+
+.form {
+    margin: 200px auto;
+    text-align: center;
+}
+
+.situation {
+    color: rgb(92, 92, 92);
+    background-color: rgba(120, 120, 120, 0.43);
+    font-size: 18px;
+    margin-bottom: 20px;
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+}
+
+.day {
+    font-size: 38px;
+}
+
+.clock {
+    font-size: 80px;
+    font-weight: bold;
+}
+
+.clock_in_button,
+.clock_out_button {
+    margin-top: 40px;
+    background-color: black;
+    color: #fff;
+    border: none;
+    border-radius: 18px;
+    font-size: 28px;
+    padding: 10px 60px;
+}
+
+.break_start_button {
+    margin-top: 40px;
+    background-color: #fff;
+    color: black;
+    border: none;
+    border-radius: 18px;
+    font-size: 28px;
+    padding: 10px 50px;
+    margin-left: 50px;
+}
+
+.break_end_button {
+    margin-top: 40px;
+    background-color: #fff;
+    color: black;
+    border: none;
+    border-radius: 18px;
+    font-size: 28px;
+    padding: 10px 50px;
+}
+
+.content {
+    margin-top: 40px;
+    font-size: 26px;
+    font-weight: bold;
+}

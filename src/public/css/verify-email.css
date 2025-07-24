@@ -1,0 +1,37 @@
+header {
+    background: black;
+}
+
+header img {
+    padding: 15px;
+}
+
+main {
+    text-align: center;
+}
+
+p {
+    margin-top: 250px;
+    margin-bottom: 50px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+a {
+    background-color: rgba(164, 164, 164, 0.436);
+    border: 1px solid rgb(108, 108, 108);
+    color: black;
+    font-weight: bold;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 18px;
+}
+
+button {
+    margin-top: 50px;
+    color: rgba(0, 140, 255, 0.796);
+    border: none;
+    background-color: #fff;
+    font-size: 16px;
+}

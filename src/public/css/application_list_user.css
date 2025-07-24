@@ -1,0 +1,61 @@
+main {
+    background-color: rgba(204, 204, 204, 0.389);
+    height: 100vh;
+}
+
+.content {
+    padding: 50px;
+    margin: 0 auto;
+    width: 70%;
+}
+
+.heading {
+    border-left: 8px solid black;
+    font-size: 22px;
+    padding-left: 15px;
+}
+
+.table {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+.label_row {
+    border-bottom: 3px solid rgba(204, 204, 204, 0.389);
+}
+
+.row {
+    border-bottom: 1px solid rgba(204, 204, 204, 0.389);
+}
+
+.label {
+    padding: 12px 0;
+    color: rgb(135, 135, 135);
+}
+
+.data {
+    padding: 12px 0;
+    text-align: center;
+    color: rgb(135, 135, 135);
+}
+
+.detail-btn {
+    color: black;
+    text-decoration: none;
+}
+
+.list__btn {
+    color: black;
+    text-decoration: none;
+    padding: 25px;
+}
+
+.list__button {
+    border-bottom: 2px solid black;
+    margin-bottom: 30px;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
