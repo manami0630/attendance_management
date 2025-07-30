@@ -25,6 +25,13 @@ class UserAttendanceRecordsTableSeeder extends Seeder
                 'clock_out_time' => $now->subDays(1)->addHours(9)->format('H:i:s'),
                 'status' => '退勤済',
             ],
+            [
+                'user_id' => 2,
+                'date' => $now->subDays(1)->format('Y-m-d'),
+                'clock_in_time' => $now->subDays(1)->format('H:i:s'),
+                'clock_out_time' => $now->subDays(1)->addHours(9)->format('H:i:s'),
+                'status' => '退勤済',
+            ],
         ]);
     }
 }

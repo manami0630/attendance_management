@@ -24,6 +24,12 @@ class UserBreakTimesTableSeeder extends Seeder
                 'break_start_time' => $now->subDays(1)->format('H:i:s'),
                 'break_end_time' => $now->subDays(1)->addHours(1)->format('H:i:s'),
             ],
+            [
+                'user_id' => 2,
+                'date' => $now->subDays(1)->format('Y-m-d'),
+                'break_start_time' => $now->subDays(1)->format('H:i:s'),
+                'break_end_time' => $now->subDays(1)->addHours(1)->format('H:i:s'),
+            ],
         ]);
     }
 }

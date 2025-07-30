@@ -7,7 +7,12 @@
 @section('content')
 <form class="form" id="status-form">
     <div class="situation">{{ $record->status ?? '勤務外' }}</div>
-    <div class="day">{{ $now->format('Y年n月j日(l)') }}</div>
+    @php
+        $weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+    @endphp
+    <div class="day">
+        {{ $now->format('Y年n月j日') }}（{{ $weekdays[$now->dayOfWeek] }}）
+    </div>
     <div class="clock" id="clock">{{ $now->format('H:i') }}</div>
     <button type="button" class="clock_in_button" id="status-button" data-action="出勤">出勤</button>
     <button type="button" class="clock_out_button" id="leave" data-action="退勤" style="display:none;">退勤</button>

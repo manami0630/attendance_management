@@ -23,7 +23,7 @@ class UsersTableSeeder extends Seeder
             ],
             [
                 'name' => '山本太郎',
-                'email' => 'admin@example.com',
+                'email' => 'yamamoto@example.com',
                 'password' => bcrypt('password456'),
                 'role' => 'admin',
             ],

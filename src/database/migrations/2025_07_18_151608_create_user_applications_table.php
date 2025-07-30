@@ -16,10 +16,13 @@ class CreateUserApplicationsTable extends Migration
         Schema::create('user_applications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('status');
+            $table->unsignedBigInteger('user_attendance_record_id')->nullable();
+            $table->unsignedBigInteger('user_break_application_id')->nullable();
+            $table->string('status')->default('承認待ち');
             $table->dateTime('target_datetime');
             $table->text('reason');
-            $table->text('details')->nullable();
+            $table->time('clock_in_time')->nullable();
+            $table->time('clock_out_time')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
@@ -34,5 +37,6 @@ class CreateUserApplicationsTable extends Migration
     public function down()
     {
         Schema::dropIfExists('user_applications');
+        Schema::dropIfExists('user_attendance_records');
     }
 }

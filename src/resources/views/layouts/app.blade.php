@@ -15,9 +15,9 @@
         </div>
         <form class="nav-links" action="/logout" method="post">
         @csrf
-            <a href="/attendance/list" class="btn">勤怠一覧</a>
-            <a href="" class="btn">スタッフ一覧</a>
-            <a href="#" class="btn">申請一覧</a>
+            <a href="/admin/attendance/list" class="btn">勤怠一覧</a>
+            <a href="/admin/staff/list" class="btn">スタッフ一覧</a>
+            <a href="/stamp_correction_request/list" class="btn">申請一覧</a>
             <button class="button" type="submit">ログアウト</button>
         </form>
     </header>

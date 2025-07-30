@@ -36,11 +36,18 @@ body {
     width: 60%;
 }
 
+.day {
+    border: none;
+    font-size: 18px;
+    width: 30%;
+}
+
 .remarks {
     width: 56%;
     font-size: 18px;
     padding: 5px;
     height: 75px;
+    margin-top: 20px;
 }
 
 .space {
@@ -49,7 +56,8 @@ body {
     font-weight: bold;
 }
 
-input {
+.text {
+    margin-top: 20px;
     font-size: 18px;
     width: 20%;
     padding: 5px;
@@ -68,4 +76,14 @@ input {
     padding: 10px 40px;
     font-size: 20px;
     margin-top: 25px;
+}
+
+.form__error {
+    height: 30px;
+    color: #ff0000;
+}
+
+.form__text {
+    color: #ff0000;
+    font-size: 18px;
 }

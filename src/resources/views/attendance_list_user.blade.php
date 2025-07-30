@@ -29,59 +29,82 @@
     const today = new Date();
     let currentMonth = today.getMonth();
     let currentYear = today.getFullYear();
+
     const monthNames = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
 
     function updateHeader() {
-      document.getElementById('currentMonth').textContent = `${currentYear}/ ${monthNames[currentMonth]}`;
+      document.getElementById('currentMonth').textContent = `${currentYear}/${monthNames[currentMonth]}`;
+    }
+
+    function clearTable() {
+      document.getElementById('attendanceBody').innerHTML = '';
+    }
+
+    function createEmptyRow(dateStr) {
+      const tbody = document.getElementById('attendanceBody');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+      <td class="row">${dateStr}</td>
+      <td class="row">-</td>
+      <td class="row">-</td>
+      <td class="row">-</td>
+      <td class="row">-</td>
+      <td class="row"><a class="detail-btn" href="/attendance/${dateStr}">詳細</a></td>
+      `;
+      tbody.appendChild(row);
     }
 
     function updateCalendar() {
       updateHeader();
-
-      const tbody = document.getElementById('attendanceBody');
-      tbody.innerHTML = '';
+      clearTable();
 
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-      for (let i = 1; i <= daysInMonth; i++) {
-        const date = new Date(currentYear, currentMonth - 1, i).toISOString().slice(0, 10);
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="row">${date}</td>
-          <td class="row">-</td>
-          <td class="row">-</td>
-          <td class="row">-</td>
-          <td class="row">-</td>
-          <td class="row"><a class="detail-btn" href="/attendance/${date}">詳細</a></td>
-        `;
-        tbody.appendChild(row);
+      for (let i = 2; i <= daysInMonth; i++) {
+        const dateObj = new Date(currentYear, currentMonth, i);
+        const dateStr = dateObj.toISOString().slice(0, 10);
+        createEmptyRow(dateStr);
       }
 
-      fetch('/attendances/list?year=' + currentYear + '&month=' + (currentMonth + 1))
-      .then(response => response.json())
+      fetch(`/attendances/list?year=${currentYear}&month=${currentMonth + 1}`)
+      .then(res => res.json())
       .then(data => {
+        if (!Array.isArray(data)) {
+          console.error('Unexpected data:', data);
+          return;
+        }
+
         data.forEach(record => {
-          const dateArray = record.date.split('-');
-          const month = parseInt(dateArray[1]) - 1;
-          const day = parseInt(dateArray[2]);
-          if (month === currentMonth) {
-            const row = document.querySelectorAll('#attendanceBody tr')[day];
-            row.innerHTML = `
+          const dateParts = record.date.split('-');
+          const yearIdx = parseInt(dateParts[0], 10);
+          const monthIdx = parseInt(dateParts[1], 10) - 1;
+          const day = parseInt(dateParts[2], 10);
+
+          if (yearIdx === currentYear && monthIdx === currentMonth) {
+            const index = day - 1;
+            const rows = document.querySelectorAll('#attendanceBody tr');
+            const row = rows[index];
+            if (row) {
+              row.innerHTML = `
               <td class="row">${record.date}</td>
               <td class="row">${record.clock_in_time ?? '-'}</td>
               <td class="row">${record.clock_out_time ?? '-'}</td>
-              <td class="row">${record.break_time ?? '-'}</td>
-              <td class="row">${record.total_time ?? '-'}</td>
+              <td class="row">${record.user_break_times ?? '-'}</td>
+              <td class="row">${record.net_work_time ?? '-'}</td>
               <td class="row"><a class="detail-btn" href="/attendance/${record.id}">詳細</a></td>
-            `;
+              `;
+            }
           }
         });
+      })
+      .catch(e => {
+        console.error('Fetchエラー：', e);
       });
     }
 
     document.getElementById('prevMonth').addEventListener('click', () => {
       currentMonth--;
-      if(currentMonth < 0) {
+      if (currentMonth < 0) {
         currentMonth = 11;
         currentYear--;
       }
@@ -90,14 +113,14 @@
 
     document.getElementById('nextMonth').addEventListener('click', () => {
       currentMonth++;
-      if(currentMonth > 11) {
+      if (currentMonth > 11) {
         currentMonth = 0;
         currentYear++;
       }
       updateCalendar();
     });
 
-    window.onload = function() {
+    window.onload = () => {
       updateCalendar();
     };
   </script>

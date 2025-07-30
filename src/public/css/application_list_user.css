@@ -1,4 +1,4 @@
-main {
+body {
     background-color: rgba(204, 204, 204, 0.389);
     height: 100vh;
 }
@@ -41,7 +41,7 @@ main {
     color: rgb(135, 135, 135);
 }
 
-.detail-btn {
+.detail_btn {
     color: black;
     text-decoration: none;
 }
@@ -57,5 +57,9 @@ main {
     margin-bottom: 30px;
     padding: 10px;
     font-size: 18px;
+}
+
+
+.list__button a.active {
     font-weight: bold;
 }
