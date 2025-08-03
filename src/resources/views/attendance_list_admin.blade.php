@@ -51,38 +51,65 @@
 
       function updateDisplay() {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        document.getElementById('currentDate').textContent = currentDate.toLocaleDateString(undefined, options);
+        const year = currentDate.getFullYear();
+        const month = ('0' + (currentDate.getMonth() + 1)).slice(-2);
+        const day = ('0' + currentDate.getDate()).slice(-2);
+        //const month = (currentDate.getMonth() + 1);
+        //const day = currentDate.getDate();
+        const formattedDate = `${year}/${month}/${day}`;
 
-        document.getElementById('dateHeading').textContent =`${currentDate.getFullYear()}年${currentDate.getMonth() + 1}月${currentDate.getDate()}日 の勤怠`;
+        document.getElementById('currentDate').textContent = formattedDate;
+
+        document.getElementById('dateHeading').textContent = `${year}年${month}月${day}日 の勤怠`;
+      }
+
+      function formatTime(timeStr) {
+        if (!timeStr) {
+          return '';
+        }
+        const [hours, minutes] = timeStr.split(':');
+        return `${hours}:${minutes}`;
       }
 
       function fetchAttendanceData() {
-        const dateStr = currentDate.toISOString().split('T')[0]; // Y-M-D形式
+        const dateStr = `${currentDate.getFullYear()}-${('0' + (currentDate.getMonth() + 1)).slice(-2)}-${('0' + currentDate.getDate()).slice(-2)}`;
+
         fetch(`/api/attendance?date=${dateStr}`)
         .then(res => res.json())
         .then(data => {
+          console.log('API response data:', data);
           const tbody = document.getElementById('attendanceTableBody');
           tbody.innerHTML = '';
 
-          if (!data.records || data.records.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6">データがありません</td></tr>';
-            return;
-          }
-
           data.records.forEach(record => {
             const row = document.createElement('tr');
+            row.className = 'row';
+
+            const userName = record.user ? record.user.name : '';
+            const clockIn = record.clock_in_time ?? '';
+            const clockOut = record.clock_out_time ?? '';
+            const breakTimes = record.user_break_times ?? '';
+            const netWorkTime = record.net_work_time ?? '';
+
             row.innerHTML = `
-            <td class="date">${record.user ? record.user.name : ''}</td>
-            <td class="date">${record.clock_in_time ?? ''}</td>
-            <td class="date">${record.clock_out_time ?? ''}</td>
-            <td class="date">${record.user_break_times ?? ''}</td>
-            <td class="date">${record.net_work_time ?? ''}</td>
-            <td class="date"><a class="detail-btn" href="/admin/attendance/${record.id}">詳細</a></td>
+              <td class="date">${escapeHtml(userName)}</td>
+              <td class="date">${escapeHtml(formatTime(clockIn))}</td>
+              <td class="date">${escapeHtml(formatTime(clockOut))}</td>
+              <td class="date">${escapeHtml(breakTimes)}</td>
+              <td class="date">${escapeHtml(netWorkTime)}</td>
+              <td class="date"><a class="detail-btn" href="/attendance/${record.user_id}?date=${dateStr}">詳細</a></td>
             `;
             tbody.appendChild(row);
           });
         })
-        .catch(error => console.error('エラー:', error));
+        .catch(error => {
+          console.error('エラー:', error);
+        });
+      }
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
       }
     </script>
   </div>

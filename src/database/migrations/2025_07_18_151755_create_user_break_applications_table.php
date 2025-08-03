@@ -17,7 +17,7 @@ class CreateUserBreakApplicationsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('application_id')->nullable();
-            $table->string('status')->default('承認待ち');
+            $table->unsignedBigInteger('break_time_id')->nullable();
             $table->date('date');
             $table->time('break_start_time')->nullable();
             $table->time('break_end_time')->nullable();
@@ -25,6 +25,7 @@ class CreateUserBreakApplicationsTable extends Migration
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('application_id')->references('id')->on('user_applications')->onDelete('set null');
+            $table->foreign('break_time_id')->references('id')->on('user_break_times')->onDelete('set null');
         });
     }
 

@@ -28,6 +28,9 @@ class UserAttendanceRecord extends Model
                 $totalMinutes += $diffMinutes;
             }
         }
+        if ($totalMinutes == 0) {
+        return '';
+    }
         return gmdate('H:i', $totalMinutes * 60);
     }
 

@@ -9,11 +9,7 @@ class UserApplication extends Model
     protected $table = 'user_applications';
 
     protected $fillable = [
-        'user_id', 'user_attendance_record_id','status', 'target_datetime', 'reason', 'clock_in_time','clock_out_time',
-    ];
-
-    protected $casts = [
-        'target_datetime' => 'datetime',
+        'user_id', 'user_attendance_record_id','status', 'target_date', 'reason', 'clock_in_time','clock_out_time',
     ];
 
     public function user()

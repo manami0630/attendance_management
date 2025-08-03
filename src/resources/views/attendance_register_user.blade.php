@@ -45,7 +45,7 @@
     });
 
     function setButtonsByStatus(status) {
-        if (status === '勤務中') {
+        if (status === '出勤中') {
             document.getElementById('status-button').style.display = 'none';
             document.getElementById('break-in').style.display = 'inline-block';
             document.getElementById('leave').style.display = 'inline-block';

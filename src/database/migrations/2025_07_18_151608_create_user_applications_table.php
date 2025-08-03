@@ -17,9 +17,8 @@ class CreateUserApplicationsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('user_attendance_record_id')->nullable();
-            $table->unsignedBigInteger('user_break_application_id')->nullable();
             $table->string('status')->default('承認待ち');
-            $table->dateTime('target_datetime');
+            $table->date('target_date');
             $table->text('reason');
             $table->time('clock_in_time')->nullable();
             $table->time('clock_out_time')->nullable();

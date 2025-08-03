@@ -26,9 +26,9 @@
         <tr class="row">
             <td class="data">{{ $application->status ?? '-' }}</td>
             <td class="data">{{ $application->user->name ?? '-' }}</td>
-            <td class="data">{{ $application->target_datetime ? $application->target_datetime->format('Y-m-d') : '-' }}</td>
+            <td class="data">{{ \Carbon\Carbon::parse($application->target_date)->format('Y/m/d') }}</td>
             <td class="data">{{ $application->reason ?? '-' }}</td>
-            <td class="data">{{ $application->created_at ? $application->created_at->format('Y-m-d') : '-' }}</td>
+            <td class="data">{{ $application->created_at ? $application->created_at->format('Y/m/d') : '-' }}</td>
             <td class="data">
                 <a class="detail_btn" href="/attendance/{{ $application->user_attendance_record_id }}">詳細</a>
             </td>

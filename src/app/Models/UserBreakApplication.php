@@ -8,5 +8,5 @@ use Illuminate\Database\Eloquent\Model;
 class UserBreakApplication extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'application', 'status', 'date', 'break_start_time', 'break_end_time'];
+    protected $fillable = ['user_id', 'application_id', 'break_time_id', 'status', 'date', 'break_start_time', 'break_end_time'];
 }

@@ -39,15 +39,17 @@ body {
 .day {
     border: none;
     font-size: 18px;
-    width: 30%;
+    width: 40%;
+    padding: 5px;
+    text-align: center;
+    text-align: left;
 }
 
 .remarks {
-    width: 56%;
+    width: 63%;
     font-size: 18px;
     padding: 5px;
-    height: 75px;
-    margin-top: 20px;
+    height: 65px;
 }
 
 .space {
@@ -57,7 +59,6 @@ body {
 }
 
 .text {
-    margin-top: 20px;
     font-size: 18px;
     width: 20%;
     padding: 5px;
@@ -79,11 +80,27 @@ body {
 }
 
 .form__error {
-    height: 30px;
     color: #ff0000;
+    font-size: 16px;
 }
 
 .form__text {
     color: #ff0000;
     font-size: 18px;
+}
+
+.applications_text {
+    font-size: 18px;
+    width: 20%;
+    padding: 5px;
+    text-align: center;
+    border: none;
+}
+
+.applications_remarks {
+    width: 63%;
+    font-size: 18px;
+    padding: 5px;
+    height: 65px;
+    border: none;
 }

@@ -14,19 +14,24 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
+        $now = new \DateTime();
+
         DB::table('users')->insert([
             [
                 'name' => '山田太郎',
                 'email' => 'yamada@example.com',
                 'password' => bcrypt('password123'),
+                'email_verified_at' => $now->format('Y-m-d'),
                 'role' => 'user',
             ],
             [
                 'name' => '山本太郎',
                 'email' => 'yamamoto@example.com',
                 'password' => bcrypt('password456'),
+                'email_verified_at' => $now->format('Y-m-d'),
                 'role' => 'admin',
             ],
         ]);
     }
 }
+

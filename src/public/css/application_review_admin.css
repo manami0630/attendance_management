@@ -39,11 +39,10 @@ body {
 .day {
     border: none;
     font-size: 18px;
-    width: 20%;
+    width: 40%;
 }
 
 .remarks {
-    margin-top: 20px;
     border: none;
     font-size: 18px;
     width: 60%;
@@ -57,10 +56,8 @@ body {
 }
 
 .text {
-    margin-top: 20px;
     font-size: 18px;
-    width: 20%;
-    padding: 5px;
+    width: 12%;
     text-align: center;
     border: none;
 }
@@ -77,11 +74,6 @@ body {
     padding: 10px 40px;
     font-size: 20px;
     margin-top: 25px;
-}
-
-.form__error {
-    height: 30px;
-    color: #ff0000;
 }
 
 .application_btn {

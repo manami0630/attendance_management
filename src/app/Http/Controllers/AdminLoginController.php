@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Auth;
+
 
 class AdminLoginController extends Controller
 {
     public function showLoginForm()
     {
-        return view('auth.login_admin'); // カスタムビューを作成
+        return view('auth.login_admin');
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
+        $credentials = $request->validated();
 
         if (Auth::attempt(array_merge($credentials, ['role' => 'admin']))) {
             $request->session()->regenerate();

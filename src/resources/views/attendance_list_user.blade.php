@@ -32,6 +32,13 @@
 
     const monthNames = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
 
+    function formatDateToYMD(dateObj) {
+      const year = dateObj.getFullYear();
+      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const day = ('0' + dateObj.getDate()).slice(-2);
+      return `${year}-${month}-${day}`;
+    }
+
     function updateHeader() {
       document.getElementById('currentMonth').textContent = `${currentYear}/${monthNames[currentMonth]}`;
     }
@@ -43,13 +50,22 @@
     function createEmptyRow(dateStr) {
       const tbody = document.getElementById('attendanceBody');
       const row = document.createElement('tr');
+
+      const dateObj = new Date(dateStr);
+      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const day = ('0' + dateObj.getDate()).slice(-2);
+      const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+      const weekDay = weekDays[dateObj.getDay()];
+
+      const displayDate = `${month}/${day}（${weekDay}）`;
+
       row.innerHTML = `
-      <td class="row">${dateStr}</td>
-      <td class="row">-</td>
-      <td class="row">-</td>
-      <td class="row">-</td>
-      <td class="row">-</td>
-      <td class="row"><a class="detail-btn" href="/attendance/${dateStr}">詳細</a></td>
+        <td class="row">${displayDate}</td>
+        <td class="row"></td>
+        <td class="row"></td>
+        <td class="row"></td>
+        <td class="row"></td>
+        <td class="row"><a class="detail-btn" href="/attendance/${dateStr}" >詳細</a></td>
       `;
       tbody.appendChild(row);
     }
@@ -60,9 +76,9 @@
 
       const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-      for (let i = 2; i <= daysInMonth; i++) {
+      for (let i = 1; i <= daysInMonth; i++) {
         const dateObj = new Date(currentYear, currentMonth, i);
-        const dateStr = dateObj.toISOString().slice(0, 10);
+        const dateStr = formatDateToYMD(dateObj);
         createEmptyRow(dateStr);
       }
 
@@ -75,30 +91,47 @@
         }
 
         data.forEach(record => {
+          function formatDate(dateStr) {
+            const dateObj = new Date(dateStr);
+            const year = dateObj.getFullYear();
+            const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+            const day = ('0' + dateObj.getDate()).slice(-2);
+            const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+            const weekDay = weekDays[dateObj.getDay()];
+            return `${month}/${day}（${weekDay}）`;
+          }
+          function formatTime(timeStr) {
+            if (!timeStr) {
+              return '';
+            }
+            const [hours, minutes] = timeStr.split(':');
+            return `${hours}:${minutes}`;
+          }
+
           const dateParts = record.date.split('-');
           const yearIdx = parseInt(dateParts[0], 10);
           const monthIdx = parseInt(dateParts[1], 10) - 1;
-          const day = parseInt(dateParts[2], 10);
+          const dayIdx = parseInt(dateParts[2], 10);
 
           if (yearIdx === currentYear && monthIdx === currentMonth) {
-            const index = day - 1;
+            const index = dayIdx - 1;
             const rows = document.querySelectorAll('#attendanceBody tr');
             const row = rows[index];
             if (row) {
               row.innerHTML = `
-              <td class="row">${record.date}</td>
-              <td class="row">${record.clock_in_time ?? '-'}</td>
-              <td class="row">${record.clock_out_time ?? '-'}</td>
-              <td class="row">${record.user_break_times ?? '-'}</td>
-              <td class="row">${record.net_work_time ?? '-'}</td>
-              <td class="row"><a class="detail-btn" href="/attendance/${record.id}">詳細</a></td>
+                <td class="row">${formatDate(record.date)}</td>
+                <td class="row">${formatTime(record.clock_in_time ?? '')}</td>
+                <td class="row">${formatTime(record.clock_out_time ?? '')}</td>
+                <td class="row">${record.user_break_times ?? ''}</td>
+                <td class="row">${record.net_work_time ?? ''}</td>
+                <td class="row"><a class="detail-btn" href="/attendance/${record.id}">詳細</a></td>
               `;
             }
           }
         });
       })
-      .catch(e => {
-        console.error('Fetchエラー：', e);
+      .catch(error => {
+        console.error('エラー:', error);
       });
     }
 
@@ -126,3 +159,4 @@
   </script>
 </div>
 @endsection
+
