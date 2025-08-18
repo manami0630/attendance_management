@@ -15,132 +15,136 @@
     <button id="nextMonth">翌月→</button>
   </div>
   <table class="table" id="attendanceTable">
-    <tr class="label_row">
-      <th class="label">日付</th>
-      <th class="label">出勤</th>
-      <th class="label">退勤</th>
-      <th class="label">休憩</th>
-      <th class="label">合計</th>
-      <th class="label">詳細</th>
-    </tr>
+    <thead>
+      <tr class="label_row">
+        <th class="label">日付</th>
+        <th class="label">出勤</th>
+        <th class="label">退勤</th>
+        <th class="label">休憩</th>
+        <th class="label">合計</th>
+        <th class="label">詳細</th>
+      </tr>
+    </thead>
     <tbody id="attendanceBody"></tbody>
   </table>
-  <script>  
-    // BladeのユーザIDをJavaScript側に渡す  
-    const userId = {{ $user->id }};  
+  <div class="export-container">
+    <form id="export-form" class="export__form" action="{{ route('api.staff.attendances.csv') }}" method="GET" target="_blank">
+      <input type="hidden" name="year" id="export-year" value="">
+      <input type="hidden" name="month" id="export-month" value="">
+      <input type="hidden" name="user_id" id="export-user-id" value="{{ $user->id ?? '' }}">
+    </form>
+    <button id="exportButton" class="export__btn btn" type="button">CSV出力</button>
+  </div>
+</div>
+<script>
+    const userId = {{ $user->id }};
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
 
-    const today = new Date();  
-    let currentMonth = today.getMonth();  
-    let currentYear = today.getFullYear();  
+    const monthNames = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
 
-    const monthNames = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];  
+    function formatDateToYMD(dateObj) {
+      const year = dateObj.getFullYear();
+      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const day = ('0' + dateObj.getDate()).slice(-2);
+      return `${year}-${month}-${day}`;
+    }
 
-    function formatDateToYMD(dateObj) {  
-      const year = dateObj.getFullYear();  
-      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);  
-      const day = ('0' + dateObj.getDate()).slice(-2);  
-      return `${year}-${month}-${day}`;  
-    }  
+    function updateHeader() {
+      document.getElementById('currentMonth').textContent = `📆${currentYear}/${monthNames[currentMonth]}`;
+    }
 
-    function updateHeader() {  
-      document.getElementById('currentMonth').textContent = `${currentYear}/${monthNames[currentMonth]}`;  
-    }  
+    function clearTable() {
+      document.getElementById('attendanceBody').innerHTML = '';
+    }
 
-    function clearTable() {  
-      document.getElementById('attendanceBody').innerHTML = '';  
-    }  
+    function createEmptyRow(dateStr) {
+      const tbody = document.getElementById('attendanceBody');
+      const row = document.createElement('tr');
 
-    function createEmptyRow(dateStr) {  
-      const tbody = document.getElementById('attendanceBody');  
-      const row = document.createElement('tr');  
+      const dateObj = new Date(dateStr);
+      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const day = ('0' + dateObj.getDate()).slice(-2);
+      const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+      const weekDay = weekDays[dateObj.getDay()];
 
-      const dateObj = new Date(dateStr);  
-      const weekDays = ['日', '月', '火', '水', '木', '金', '土'];  
-      const weekDay = weekDays[dateObj.getDay()];  
-      const monthDisplay = ('0' + (dateObj.getMonth() + 1)).slice(-2);  
-      const dayDisplay = ('0' + dateObj.getDate()).slice(-2);  
+      const displayDate = `${month}/${day}（${weekDay}）`;
 
-      const displayDate = `${monthDisplay}/${dayDisplay}（${weekDay}）`;  
+      row.innerHTML = `
+        <td class="row">${displayDate}</td>
+        <td class="row"></td>
+        <td class="row"></td>
+        <td class="row"></td>
+        <td class="row"></td>
+        <td class="row"><a class="detail-btn" href="javascript:void(0);" data-date="${dateStr}" >詳細</a></td>
+      `;
+      tbody.appendChild(row);
+    }
 
-      row.innerHTML = `  
-        <td class="row" data-date="${dateStr}">${displayDate}</td>  
-        <td class="row"></td>  
-        <td class="row"></td>  
-        <td class="row"></td>  
-        <td class="row"></td>  
-        <td class="row"><a class="detail-btn" href="/attendance/${dateStr}">詳細</a></td>  
-      `;  
-      tbody.appendChild(row);  
-    }  
+    function updateCalendar() {
+      updateHeader();
+      clearTable();
 
-    function updateCalendar() {  
-      updateHeader();  
-      clearTable();  
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();  
+      for (let i = 1; i <= daysInMonth; i++) {
+        const dateObj = new Date(currentYear, currentMonth, i);
+        const dateStr = formatDateToYMD(dateObj);
+        createEmptyRow(dateStr);
+      }
 
-      // すべての日付の行を作成  
-      for (let i = 1; i <= daysInMonth; i++) {  
-        const dateObj = new Date(currentYear, currentMonth, i);  
-        const dateStr = formatDateToYMD(dateObj);  
-        createEmptyRow(dateStr);  
-      }  
+      fetch(`/api/staff/attendances?year=${currentYear}&month=${currentMonth + 1}&user_id=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data)) {
+          console.error('Unexpected data:', data);
+          return;
+        }
 
-      // APIからデータ取得  
-      fetch(`/admin/attendance/staff/${userId}?year=${currentYear}&month=${currentMonth + 1}`)  
-        .then(res => {
-          if (!res.ok) throw new Error(`HTTPエラー: ${res.status}`);
-          return res.json();
-        })
-        .then(data => {
-          if (!Array.isArray(data)) {
-            console.error('予期しないデータ形式:', data);
-            return;
+        data.forEach(record => {
+          function formatDate(dateStr) {
+            const dateObj = new Date(dateStr);
+            const year = dateObj.getFullYear();
+            const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+            const day = ('0' + dateObj.getDate()).slice(-2);
+            const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+            const weekDay = weekDays[dateObj.getDay()];
+            return `${month}/${day}（${weekDay}）`;
+          }
+          function formatTime(timeStr) {
+            if (!timeStr) {
+              return '';
+            }
+            const [hours, minutes] = timeStr.split(':');
+            return `${hours}:${minutes}`;
           }
 
-          // 取得したレコードを日付にマッチさせて反映
-          data.forEach(record => {
-            const recordDate = record.date; // 'YYYY-MM-DD'
-            const rowIndex = (() => {
-              const dateParts = recordDate.split('-');
-              const yearIdx = parseInt(dateParts[0], 10);
-              const monthIdx = parseInt(dateParts[1], 10) - 1;
-              const dayIdx = parseInt(dateParts[2], 10);
-              if (yearIdx === currentYear && monthIdx === currentMonth) {
-                return dayIdx - 1; // 0-based index
-              }
-              return -1;
-            })();
+          const dateParts = record.date.split('-');
+          const yearIdx = parseInt(dateParts[0], 10);
+          const monthIdx = parseInt(dateParts[1], 10) - 1;
+          const dayIdx = parseInt(dateParts[2], 10);
 
-            if (rowIndex >= 0) {
-              const rows = document.querySelectorAll('#attendanceBody tr');
-              const row = rows[rowIndex];
-              if (row) {
-                // 各項目フォーマット
-                const formatTime = t => t ?? '-';
-
-                row.innerHTML = `
-                  <td class="row">${(() => {
-                    const dateObj = new Date(record.date);
-                    const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
-                    const weekDay = weekDays[dateObj.getDay()];
-                    const monthDisplay = ('0' + (dateObj.getMonth() + 1)).slice(-2);
-                    const dayDisplay = ('0' + dateObj.getDate()).slice(-2);
-                    return `${monthDisplay}/${dayDisplay}（${weekDay}）`;
-                  })()}</td>
-                  <td class="row">${formatTime(record.clock_in_time)}</td>
-                  <td class="row">${formatTime(record.clock_out_time)}</td>
-                  <td class="row">${record.user_break_times ?? '-'}</td>
-                  <td class="row">${record.net_work_time ?? '-'}</td>
-                  <td class="row"><a class="detail-btn" href="/attendance/${record.id}">詳細</a></td>
-                `;
-              }
+          if (yearIdx === currentYear && monthIdx === currentMonth) {
+            const index = dayIdx - 1;
+            const rows = document.querySelectorAll('#attendanceBody tr');
+            const row = rows[index];
+            if (row) {
+              row.innerHTML = `
+                <td class="row">${formatDate(record.date)}</td>
+                <td class="row">${formatTime(record.clock_in_time ?? '')}</td>
+                <td class="row">${formatTime(record.clock_out_time ?? '')}</td>
+                <td class="row">${record.user_break_times ?? ''}</td>
+                <td class="row">${record.net_work_time ?? ''}</td>
+                <td class="row"><a class="detail-btn" href="/attendance/${record.user_id}?date=${record.date}">詳細</a></td>
+              `;
             }
-          });
-        })
-        .catch(e => {
-          console.error('データ取得エラー:', e);
+          }
         });
+      })
+      .catch(error => {
+        console.error('エラー:', error);
+      });
     }
 
     document.getElementById('prevMonth').addEventListener('click', () => {
@@ -164,6 +168,25 @@
     window.onload = () => {
       updateCalendar();
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const exportForm = document.getElementById('export-form');
+      const exportButton = document.getElementById('exportButton');
+
+      function updateExportFields() {
+        document.getElementById('export-year').value = currentYear;
+        document.getElementById('export-month').value = (currentMonth + 1);
+        document.getElementById('export-user-id').value = userId;
+      }
+
+      if (exportButton) {
+        exportButton.addEventListener('click', (e) => {
+          e.preventDefault();
+          updateExportFields();
+          exportForm.submit();
+        });
+      }
+      updateExportFields();
+    });
   </script>
-</div>
 @endsection

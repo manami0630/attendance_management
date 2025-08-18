@@ -33,16 +33,18 @@ body {
 }
 
 .date {
-    width: 60%;
+    font-size: 18px;
+    width: 20%;
+    padding: 5px;
+    text-align: center;
 }
 
 .day {
-    border: none;
     font-size: 18px;
-    width: 40%;
+    width: 20%;
     padding: 5px;
     text-align: center;
-    text-align: left;
+    border: none;
 }
 
 .remarks {

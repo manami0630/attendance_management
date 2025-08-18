@@ -40,7 +40,7 @@
     }
 
     function updateHeader() {
-      document.getElementById('currentMonth').textContent = `${currentYear}/${monthNames[currentMonth]}`;
+      document.getElementById('currentMonth').textContent = `📆${currentYear}/${monthNames[currentMonth]}`;
     }
 
     function clearTable() {

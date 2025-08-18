@@ -21,15 +21,19 @@ class UsersTableSeeder extends Seeder
                 'name' => '山田太郎',
                 'email' => 'yamada@example.com',
                 'password' => bcrypt('password123'),
-                'email_verified_at' => $now->format('Y-m-d'),
+                'email_verified_at' => $now->format('Y-m-d H:i'),
                 'role' => 'user',
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
             [
                 'name' => '山本太郎',
                 'email' => 'yamamoto@example.com',
                 'password' => bcrypt('password456'),
-                'email_verified_at' => $now->format('Y-m-d'),
+                'email_verified_at' => $now->format('Y-m-d H:i'),
                 'role' => 'admin',
+                'created_at' => $now,
+                'updated_at' => $now,
             ],
         ]);
     }

@@ -59,3 +59,21 @@ body {
     color: black;
     text-decoration: none;
 }
+
+#exportButton.export__btn {
+    margin: 30px 0 0 auto;
+}
+
+.export-container {
+    text-align: right;
+}
+
+.export__btn {
+    background-color: black;
+    color: #fff;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-weight: bold;
+}

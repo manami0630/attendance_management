@@ -38,6 +38,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     Route::get('/admin/staff/list', [AttendanceController::class, 'staff_list_admin']);
 
+    Route::get('/api/staff/attendances', [AttendanceController::class, 'get']);
+
     Route::get('/admin/attendance/staff/{id}', [AttendanceController::class, 'attendances_by_staff_admin']);
 
     Route::get('/stamp_correction_request/approve/{id}', [AttendanceController::class, 'showApplicationDetails'])->name('application.details');
@@ -45,6 +47,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/stamp_correction_request/approve/{id}', [AttendanceController::class, 'approve'])->name('user.attendance.approve');
 
     Route::post('/attendance/{id}', [AttendanceController::class, 'save'])->name('attendance.save');
+
+    Route::get('/staff/attendances/csv', [AttendanceController::class, 'exportCsv'])->name('api.staff.attendances.csv');
 });
 
 Route::post('/logout', [AttendanceController::class, 'logout']);

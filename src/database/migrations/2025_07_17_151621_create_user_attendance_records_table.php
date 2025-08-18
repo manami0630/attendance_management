@@ -16,7 +16,6 @@ class CreateUserAttendanceRecordsTable extends Migration
         Schema::create('user_attendance_records', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('application_id')->nullable();
             $table->date('date');
             $table->time('clock_in_time')->nullable();
             $table->time('clock_out_time')->nullable();
@@ -24,7 +23,6 @@ class CreateUserAttendanceRecordsTable extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('application_id')->references('id')->on('user_applications')->onDelete('set null');
         });
     }
 

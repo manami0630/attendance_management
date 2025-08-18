@@ -20,15 +20,21 @@ class UserBreakTimesTableSeeder extends Seeder
         DB::table('user_break_times')->insert([
             [
                 'user_id' => 1,
+                'user_attendance_record_id' => 1,
                 'date' => $now->subDays(1)->format('Y-m-d'),
                 'break_start_time' => $now->subDays(1)->format('H:i:s'),
                 'break_end_time' => $now->subDays(1)->addHours(1)->format('H:i:s'),
+                'created_at' => $now->toDateTimeString(),
+                'updated_at' => $now->toDateTimeString(),
             ],
             [
                 'user_id' => 2,
+                'user_attendance_record_id' => 2,
                 'date' => $now->subDays(1)->format('Y-m-d'),
                 'break_start_time' => $now->subDays(1)->format('H:i:s'),
                 'break_end_time' => $now->subDays(1)->addHours(1)->format('H:i:s'),
+                'created_at' => $now->toDateTimeString(),
+                'updated_at' => $now->toDateTimeString(),
             ],
         ]);
     }

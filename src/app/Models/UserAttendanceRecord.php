@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class UserAttendanceRecord extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id', 'application', 'clock_in_time', 'clock_out_time', 'date', 'status'];
+    protected $fillable = ['user_id', 'clock_in_time', 'clock_out_time', 'date', 'status'];
 
     protected $appends = ['user_break_times', 'net_work_time'];
 

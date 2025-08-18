@@ -10,10 +10,11 @@ use App\Models\UserBreakTime;
 use Illuminate\Support\Facades\Auth;
 use App\Models\UserApplication;
 use App\Models\UserBreakApplication;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AttendanceController extends Controller
 {
-    //出勤画面
     public function attendance_register_user()
     {
         $now = Carbon::now();
@@ -23,7 +24,7 @@ class AttendanceController extends Controller
 
         return view('attendance_register_user', compact('record','now'));
     }
-    //勤怠一覧
+
     public function attendance_list_user()
     {
         $user = auth()->user();
@@ -33,7 +34,7 @@ class AttendanceController extends Controller
 
         return view('attendance_list_user', compact('records','user'));
     }
-    //勤怠一覧
+
     public function getAttendances(Request $request)
     {
         $year = $request->query('year');
@@ -53,7 +54,7 @@ class AttendanceController extends Controller
 
         return response()->json($records);
     }
-    //申請一覧
+
     public function application_list(Request $request)
     {
         $user = auth()->user();
@@ -77,15 +78,16 @@ class AttendanceController extends Controller
             abort(403);
         }
     }
-    //勤怠詳細
-    public function attendance_detail(Request $request,$user_id)
+
+    public function attendance_detail(Request $request,$id)
     {
         $user = auth()->user();
 
-        $date = $request->query('date') ?? date('Y-m-d');
+        $dateParam = $request->query('date');
+        $date = $dateParam ?? date('Y-m-d');
 
         if ($user->role === 'user') {
-            $record = \App\Models\UserAttendanceRecord::find($user_id);
+            $record = \App\Models\UserAttendanceRecord::find($id);
 
             if (!$record) {
                 return view('attendance_detail_user', [
@@ -94,29 +96,57 @@ class AttendanceController extends Controller
                     'breaks' => collect(),
                     'applicationStatus' => null,
                     'date' => $date,
+                    'application' => null,
                 ]);
             }
 
             $breaks = \App\Models\UserBreakTime::where('user_id', $record->user_id)
                 ->where('date', $record->date)
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->sortBy(function($b) {
+                    return $b->break_start_time ?? '9999-12-31 23:59:59';
+                });
+
+            $applicationBreaks = \App\Models\UserBreakApplication::where('user_id', $record->user_id)
+                ->where('date', $record->date)
+                ->orderBy('created_at', 'desc')
                 ->get();
 
-            $application = null;
-            $applicationStatus = null;
 
-            if ($record->application_id) {
-                $application = \App\Models\UserApplication::find($record->application_id);
-                $applicationStatus = $application ? $application->status : null;
+            $recordDate = $record->date;
+            $clockInTime = isset($record->clock_in_time) ? \Carbon\Carbon::parse($record->clock_in_time)->format('H:i') : '';
+            $clockOutTime = isset($record->clock_out_time) ? \Carbon\Carbon::parse($record->clock_out_time)->format('H:i') : '';
+
+            $applications = \App\Models\UserApplication::where('user_attendance_record_id', $record->id)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $application = $applications->first();
+            $pendingApplication = $applications->firstWhere('status', '承認待ち');
+
+            if ($pendingApplication) {
+                $applicationStatus = '承認待ち';
+            } else {
+                $applicationStatus = $applications->isNotEmpty() ? $applications->first()->status : null;
             }
+            $applicationReason = $application ? $application->reason : null;
 
             $breakApplications = \App\Models\UserBreakApplication::where('user_id', $record->user_id)
-                ->where('date', $record->date)
-                ->get();
+                ->orderBy('updated_at', 'desc')
+                ->get()
+                ->groupBy('user_attendance_record_id')
+                ->map(function ($group) {
+                    $maxUpdated = $group->max('updated_at');
+                    return $group->where('updated_at', $maxUpdated);
+                })
+                ->values()
+                ->flatMap(function ($items) { return $items; });
 
-            return view('attendance_detail_user', compact('user', 'record', 'breaks', 'applicationStatus', 'application','date', 'breakApplications'));
+            return view('attendance_detail_user', compact('user', 'record', 'breaks', 'applicationStatus', 'applications','date', 'breakApplications','recordDate', 'clockInTime', 'clockOutTime', 'application', 'applicationReason', 'applicationBreaks'));
 
         } elseif ($user->role === 'admin') {
-            $targetUser = \App\Models\User::findOrFail($user_id);
+            $targetUser = \App\Models\User::findOrFail($id);
 
             $record = \App\Models\UserAttendanceRecord::where('user_id', $targetUser->id)
                 ->where('date', $date)
@@ -132,7 +162,7 @@ class AttendanceController extends Controller
             abort(403);
         }
     }
-    //勤怠一覧
+
     public function attendance_list_admin(Request $request)
     {
         $date = $request->query('date', date('Y-m-d'));
@@ -190,17 +220,42 @@ class AttendanceController extends Controller
         return view('staff_list_admin', compact('records','users'));
     }
 
-    public function attendances_by_staff_admin(Request $request,$id)
+    public function attendances_by_staff_admin($id)
     {
         $user = \App\Models\User::findOrFail($id);
 
-        $date = $request->query('date', date('Y-m-d'));
+        $records = \App\Models\UserAttendanceRecord::where('user_id', $id)
+            ->orderBy('date', 'desc')
+            ->get();
 
-        $records = \App\Models\UserAttendanceRecord::whereDate('date', $date)
-        ->with('user')
-        ->get();
+        return view('attendances_by_staff_admin', compact('records','user'));
+    }
 
-        return view('attendances_by_staff_admin', compact('user', 'records', 'date'));
+    public function get(Request $request)
+    {
+        $year = $request->query('year');
+        $month = $request->query('month');
+        $userId = $request->query('user_id');
+
+        $query = UserAttendanceRecord::query();
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        } else {
+            $query->where('user_id', auth()->id());
+        }
+
+        if ($year) {
+            $query->whereYear('date', $year);
+        }
+
+        if ($month) {
+            $query->whereMonth('date', $month);
+        }
+
+        $records = $query->orderBy('date', 'desc')->get();
+
+        return response()->json($records);
     }
 
 
@@ -217,7 +272,7 @@ class AttendanceController extends Controller
         return view('application_review_admin', compact('application','breakApplications','user', 'applicationStatus'));
     }
 
-    public function approve($id)
+    public function approve(Request $request, $id)
     {
         $application = \App\Models\UserApplication::findOrFail($id);
 
@@ -232,24 +287,63 @@ class AttendanceController extends Controller
         $application->status = '承認済み';
         $application->save();
 
-        $breakApplications = \App\Models\UserBreakApplication::where('application_id', $id)->get();
+        $breaks = $request->get('breaks', []);
+        if (is_array($breaks) && !empty($breaks)) {
+            DB::beginTransaction();
+            try {
+                foreach ($breaks as $breakData) {
+                    $potentialId = $breakData['id'] ?? null;
 
-        foreach ($breakApplications as $breakApplication) {
-            if ($breakApplication->break_time_id) {
-                \App\Models\UserBreakTime::updateOrCreate(
-                    ['id' => $breakApplication->break_time_id],
-                    [
-                        'user_id' => $breakApplication->user_id,
-                        'date' => $application->target_date,
-                        'break_start_time' => $breakApplication->break_start_time,
-                        'break_end_time' => $breakApplication->break_end_time,
-                    ]
-                );
+                    if (!$potentialId) continue;
+
+                    $breakTime = \App\Models\UserBreakTime::where('id', $potentialId)
+                        ->where('user_id', $application->user_id)
+                        ->first();
+
+                    if (!$breakTime) {
+                        $appBreak = \App\Models\UserBreakApplication::where('id', $potentialId)
+                            ->where('user_id', $application->user_id)
+                            ->first();
+
+                        if ($appBreak) {
+                            $breakTime = \App\Models\UserBreakTime::where('id', $appBreak->break_time_id)
+                                ->where('user_id', $application->user_id)
+                                ->first();
+                        }
+                    }
+
+                    if (!$breakTime) {
+                        Log::warning('BreakTime not found for update (fallback)', [
+                            'break_time_id_or_app_id' => $potentialId,
+                            'user_id' => $application->user_id,
+                        ]);
+                        continue;
+                    }
+
+                    if (array_key_exists('start_time', $breakData)) {
+                        $breakTime->break_start_time = $breakData['start_time'] ?? null;
+                    }
+                    if (array_key_exists('end_time', $breakData)) {
+                        $breakTime->break_end_time = $breakData['end_time'] ?? null;
+                    }
+
+                    $breakTime->save();
+                    Log::info('BreakTime updated', ['break_time_id' => $breakTime->id]);
+                }
+
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                Log::error('Breaks update failed', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                abort(500, 'Breaks update failed.');
             }
-            return view('application_list_admin');
         }
+        return view('application_list_admin');
     }
-    //出勤登録画面
+
     public function saveAttendance(Request $request)
     {
         $validated = $request->validate([
@@ -337,7 +431,7 @@ class AttendanceController extends Controller
             'currentStatus' => $currentStatus
         ]);
     }
-    //出勤登録画面
+
     public function getCurrentStatus()
     {
         $user = auth()->user();
@@ -372,7 +466,7 @@ class AttendanceController extends Controller
 
         return redirect('/login');
     }
-    //修正
+
     public function update(DetailRequest $request)
     {
         $application = UserApplication::create([
@@ -386,39 +480,44 @@ class AttendanceController extends Controller
         ]);
 
         $record = \App\Models\UserAttendanceRecord::findOrFail($request->input('user_attendance_record_id'));
-        $record->application_id = $application->id;
-        $record->save();
 
-        $breakTimes = (array) $request->input('break_start_time');
-        $endTimes = (array) $request->input('break_end_time');
+        $breakTimesStarts = (array) $request->input('break_start_time');
+        $breakTimesEnds   = (array) $request->input('break_end_time');
+        $breakTimeIds       = (array) $request->input('break_time_ids', []);
 
-        if (count($breakTimes) === count($endTimes)) {
-            for ($i = 0; $i < count($breakTimes); $i++) {
-
-                $breakTime = \App\Models\UserBreakTime::updateOrCreate(
-                [
-                    'user_id' => auth()->id(),
-                    'date' => $request->input('date'),
-                ]
-                );
-
-                $breakApplication = new UserBreakApplication();
-                $breakApplication->user_id = auth()->id();
-                $breakApplication->application_id = $application->id;
-                $breakApplication->date = $request->input('date');
-                $breakApplication->break_start_time = $breakTimes[$i];
-                $breakApplication->break_end_time = $endTimes[$i];
-                $breakApplication->break_time_id = $breakTime->id;
-                $breakApplication->save();
-            }
-            $breakApplication->save();
-
-            $breakApplicationId = $breakApplication->id;
-
-            $application->save();
-        } else {
+        if (count($breakTimesStarts) !== count($breakTimesEnds)) {
             return redirect('/attendance/list')->withErrors(['break_times' => '休憩時間の開始時間と終了時間の数が一致しません。']);
         }
+
+        foreach ($breakTimesStarts as $i => $start) {
+            $existingBreakTimeId = $breakTimeIds[$i] ?? null;
+
+            if (!$existingBreakTimeId) {
+                return redirect('/attendance/list')->withErrors([
+                    'break_times' => 'break_time_id が指定されていません。既存の break_time を再利用してください。'
+                ]);
+            }
+
+            $breakTime = \App\Models\UserBreakTime::find($existingBreakTimeId);
+
+            if (!$breakTime) {
+                return redirect('/attendance/list')->withErrors([
+                    'break_times' => '指定された break_time_id が見つかりません。'
+                ]);
+            }
+
+            $breakApplication = new UserBreakApplication();
+            $breakApplication->user_id = auth()->id();
+            $breakApplication->application_id = $application->id;
+            $breakApplication->date = $request->input('date');
+            $breakApplication->break_start_time = $start;
+            $breakApplication->break_end_time = $breakTimesEnds[$i] ?? null;
+            $breakApplication->break_time_id = $breakTime->id;
+            $breakApplication->save();
+        }
+
+        $application->save();
+
         return redirect('/attendance/list');
     }
 
@@ -426,30 +525,18 @@ class AttendanceController extends Controller
     {
         $record = \App\Models\UserAttendanceRecord::findOrFail($id);
 
-        $record->clock_in_time = $request->input('clock_in_time');
+        $record->clock_in_time  = $request->input('clock_in_time');
         $record->clock_out_time = $request->input('clock_out_time');
         $record->save();
 
         $attendance = $record;
 
         $break_start_times = $request->input('break_start_time', []);
-        $break_end_times = $request->input('break_end_time', []);
+        $break_end_times   = $request->input('break_end_time', []);
 
-        $breaks = \App\Models\UserBreakTime::where('user_attendance_record_id', $attendance->id)->get();
-
-        foreach ($break_start_times as $index => $start_time) {
-            if (isset($breaks[$index])) {
-                $breaks[$index]->break_start_time = $start_time;
-                $breaks[$index]->break_end_time = $break_end_times[$index] ?? '';
-                $breaks[$index]->save();
-            } else {
-                \App\Models\UserBreakTime::create([
-                    'attendance_id' => $attendance->id,
-                    'break_start_time' => $start_time,
-                    'break_end_time' => $break_end_times[$index] ?? '',
-                ]);
-            }
-        }
+        $existingBreaks = \App\Models\UserBreakTime::where('user_attendance_record_id', $attendance->id)
+            ->orderBy('id')
+            ->get();
 
         $application = \App\Models\UserApplication::create([
             'user_id' => $attendance->user_id,
@@ -462,17 +549,85 @@ class AttendanceController extends Controller
         ]);
 
         foreach ($break_start_times as $index => $start_time) {
+            $endTime = $break_end_times[$index] ?? '';
+
+            if (isset($existingBreaks[$index])) {
+                $existingBreaks[$index]->break_start_time = $start_time;
+                $existingBreaks[$index]->break_end_time   = $endTime;
+                $existingBreaks[$index]->save();
+
+                $breakTimeId = $existingBreaks[$index]->id;
+            } else {
+                $newBreak = \App\Models\UserBreakTime::create([
+                    'attendance_id' => $attendance->id,
+                    'break_start_time' => $start_time,
+                    'break_end_time' => $endTime,
+                ]);
+                $breakTimeId = $newBreak->id;
+            }
+
             \App\Models\UserBreakApplication::create([
                 'user_id' => $attendance->user_id,
                 'application_id' => $application->id,
+                'break_time_id' => $breakTimeId,
                 'date' => $attendance->date,
                 'break_start_time' => $start_time,
-                'break_end_time' => $break_end_times[$index] ?? '',
+                'break_end_time' => $endTime,
             ]);
         }
-        $record->application_id = $application->id;
+
         $record->save();
 
         return redirect('admin/attendance/list');
+    }
+
+    public function exportCsv(Request $request)
+    {
+        $year   = (int) $request->query('year');
+        $month  = (int) $request->query('month');
+        $userId = (int) $request->query('user_id');
+
+        if ($year <= 0 || $month < 1 || $month > 12 || $userId <= 0) {
+            return response()->json(['error' => 'Invalid parameters'], 400);
+        }
+
+        $startDate = sprintf('%04d-%02d-01', $year, $month);
+        $endDate   = date('Y-m-t', strtotime($startDate));
+
+        $records = UserAttendanceRecord::where('user_id', $userId)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $columns = ['日付', '出勤時間', '退勤時間', '休憩時間', '合計', 'ステータス'];
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"attendance_{$userId}_${year}_${month}.csv\"",
+        ];
+
+        $callback = function() use ($records, $columns) {
+            $handle = fopen('php://output', 'w');
+
+            fprintf($handle, "%s\n", "\xEF\xBB\xBF");
+
+            fputcsv($handle, $columns);
+
+            foreach ($records as $rec) {
+                $row = [
+                    $rec->date,
+                    $rec->clock_in_time ?? '',
+                    $rec->clock_out_time ?? '',
+                    $rec->user_break_times ?? '',
+                    $rec->net_work_time ?? '',
+                    $rec->status ?? '',
+                ];
+                fputcsv($handle, $row);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

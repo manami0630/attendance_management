@@ -25,6 +25,7 @@ class CreateUserApplicationsTable extends Migration
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_attendance_record_id')->references('id')->on('user_attendance_records')->onDelete('set null');
         });
     }
 

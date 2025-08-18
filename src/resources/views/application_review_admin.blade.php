@@ -19,7 +19,10 @@
             <tr class="row">
                 <th class="label">日付</th>
                 <td class="data">
-                    <input class="day" type="text" name="date" value="{{ $application->target_date ?? '' }}" readonly>
+                    <input class="day" name="date_display" type="text" value="{{ isset($application->target_date) ? \Carbon\Carbon::parse($application->target_date)->format('Y年') : '' }}" readonly>
+                    <span class="space"></span>
+                    <input class="day" name="date_display" type="text" value="{{ isset($application->target_date) ? \Carbon\Carbon::parse($application->target_date)->format('n月j日') : '' }}" readonly>
+                    <input type="hidden" name="date" value="{{ isset($application->target_date) ? $application->target_date : '' }}">
                 </td>
             </tr>
             <tr class="row">
@@ -30,17 +33,18 @@
                     <input class="text" type="text" name="clock_out_time" value="{{ isset($application->clock_out_time) ? \Carbon\Carbon::parse($application->clock_out_time)->format('H:i') : '' }}">
                 </td>
             </tr>
-            @foreach ($breakApplications as $breakApplication)
+            @foreach ($breakApplications as $index => $breakApplication)
             <tr class="row">
-                @if($loop->first)
-                <th class="label">休憩</th>
+                @if($index == 0)
+                    <th class="label">休憩</th>
                 @else
-                <th class="label">休憩{{ $loop->iteration }}</th>
+                    <th class="label">休憩{{ $index + 1 }}</th>
                 @endif
                 <td class="data">
-                    <input class="text" type="text" name="break_start_time[]" value="{{ isset($breakApplication->break_start_time) ? \Carbon\Carbon::parse($breakApplication->break_start_time)->format('H:i') : '' }}">
+                    <input type="hidden" name="breaks[{{ $index }}][id]" value="{{ $breakApplication->break_time_id }}">
+                    <input class="text" type="text" name="breaks[{{ $index }}][start_time]" value="{{ isset($breakApplication->break_start_time) ? \Carbon\Carbon::parse($breakApplication->break_start_time)->format('H:i') : '' }}">
                     <span class="space">~</span>
-                    <input class="text" type="text" name="break_end_time[]" value="{{ isset($breakApplication->break_end_time) ? \Carbon\Carbon::parse($breakApplication->break_end_time)->format('H:i') : '' }}">
+                    <input class="text" type="text" name="breaks[{{ $index }}][end_time]" value="{{ isset($breakApplication->break_end_time) ? \Carbon\Carbon::parse($breakApplication->break_end_time)->format('H:i') : '' }}">
                 </td>
             </tr>
             @endforeach
