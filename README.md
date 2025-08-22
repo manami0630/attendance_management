@@ -21,18 +21,18 @@
    - MAIL_FROM_ADDRESS=例: your-email@example.com
 
  ### テストアカウント
- name:テストユーザ
- email:test@gmail.com
- password:password
+ - name:テストユーザ
+ - email:test@gmail.com
+ - password:password
 
  ### PHPUnitを利用したテストに関して
  以下のコマンド:
- `docker-compose exec mysql bash`
- `mysql -u root -p`
- //パスワードはrootと入力
- `CREATE DATABASE demo_test;`
- `php artisan key:generate --env=testing`
- `php artisan migrate --env=testing`
+ 1. `docker-compose exec mysql bash`
+ 2. `mysql -u root -p`
+  - パスワードはrootと入力
+ 3. `CREATE DATABASE demo_test;`
+ 4. `php artisan key:generate --env=testing`
+ 5. `php artisan migrate --env=testing`
  
 ## 使用技術
 - PHP 7.4.9
