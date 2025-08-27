@@ -20,6 +20,26 @@
 * .envに以下の値を入力してください。
    - MAIL_FROM_ADDRESS=例: your-email@example.com
 
+ ## テストアカウント
+ ### 一般ユーザー
+ - name:テストユーザー
+ - email:general1@gmail.com
+ - password:password123
+
+ ### 管理者
+ - name:テストユーザー
+ - email:general2@gmail.com
+ - password:password123
+   
+ ### PHPUnitを利用したテストに関して
+ 以下のコマンド:
+ 1. `docker-compose exec mysql bash`
+ 2. `mysql -u root -p`
+  - パスワードはrootと入力
+ 3. `CREATE DATABASE demo_test;`
+ 4. `php artisan key:generate --env=testing`
+ 5. `php artisan migrate --env=testing`
+ 
 ## 使用技術
 - PHP 7.4.9
 - Laravel 8.83.8
