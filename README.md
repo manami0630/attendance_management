@@ -20,11 +20,17 @@
 * .envに以下の値を入力してください。
    - MAIL_FROM_ADDRESS=例: your-email@example.com
 
- ### テストアカウント
- - name:テストユーザ
- - email:test@gmail.com
- - password:password
+ ## テストアカウント
+ ### 一般ユーザー
+ - name:テストユーザー
+ - email:general1@gmail.com
+ - password:password123
 
+ ### 管理者
+ - name:テストユーザー
+ - email:general2@gmail.com
+ - password:password123
+   
  ### PHPUnitを利用したテストに関して
  以下のコマンド:
  1. `docker-compose exec mysql bash`
