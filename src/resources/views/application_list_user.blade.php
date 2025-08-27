@@ -30,7 +30,7 @@
             <td class="data">{{ $application->reason ?? '-' }}</td>
             <td class="data">{{ $application->created_at ? $application->created_at->format('Y/m/d') : '-' }}</td>
             <td class="data">
-                <a class="detail_btn" href="/attendance/{{ $application->id }}">詳細</a>
+                <a class="detail_btn" href="/attendance/{{ $application->user_attendance_record_id }}">詳細</a>
             </td>
         </tr>
         @endforeach

@@ -18,7 +18,7 @@
     <button type="button" class="clock_out_button" id="leave" data-action="退勤" style="display:none;">退勤</button>
     <button type="button" class="break_start_button" id="break-in" data-action="休憩入" style="display:none;">休憩入</button>
     <button type="button" class="break_end_button" id="break-back" data-action="休憩戻" style="display:none;">休憩戻</button>
-    <p class="content" id="content" style="display:none;">お疲れさまでした。</p>
+    <p class="content" id="content" style="display:none;">お疲れ様でした。</p>
 </form>
 <script>
     setInterval(function() {

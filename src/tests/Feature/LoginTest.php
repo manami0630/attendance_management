@@ -34,7 +34,7 @@ class LoginTest extends TestCase
     public function test_login_user_validate_password()
     {
         $response = $this->post('/login', [
-            'email' => "general2@gmail.com",
+            'email' => "general1@gmail.com",
             'password' => "",
         ]);
 
@@ -48,7 +48,7 @@ class LoginTest extends TestCase
     public function test_login_user_validate_user()
     {
         $response = $this->post('/login', [
-            'email' => "general2@gmail.com",
+            'email' => "general1@gmail.com",
             'password' => "password123",
         ]);
 

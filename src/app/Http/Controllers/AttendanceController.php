@@ -341,7 +341,7 @@ class AttendanceController extends Controller
                 abort(500, 'Breaks update failed.');
             }
         }
-        return view('application_list_admin');
+        return redirect()->route('application.details', $application->id);
     }
 
     public function saveAttendance(Request $request)

@@ -53,4 +53,4 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 Route::post('/logout', [AttendanceController::class, 'logout']);
 
-Route::get('/attendance/{id}', [AttendanceController::class, 'attendance_detail'])->middleware('auth');
+Route::get('/attendance/{id}', [AttendanceController::class, 'attendance_detail'])->middleware('auth')->name('user.attendance.show');

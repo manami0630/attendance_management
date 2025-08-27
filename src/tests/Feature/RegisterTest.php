@@ -6,6 +6,8 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Auth\Notifications\VerifyEmail;
 
 class RegisterTest extends TestCase
 {
