@@ -22,14 +22,14 @@
 
  ## テストアカウント
  ### 一般ユーザー
- - name:テストユーザー
- - email:general1@gmail.com
+ - name:山田太郎
+ - email:yamada@example.com
  - password:password123
 
  ### 管理者
- - name:テストユーザー
- - email:general2@gmail.com
- - password:password123
+ - name:山本太郎
+ - email:yamamoto@example.com
+ - password:password456
    
  ### PHPUnitを利用したテストに関して
  以下のコマンド:
